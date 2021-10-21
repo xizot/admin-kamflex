@@ -9,7 +9,7 @@ import Loading from './components/Loading/Loading';
 import { routes } from './configs/routes';
 import ProtectedRoute from './components/Commons/ProtectedRoute/ProtectedRoute';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { authActions } from './slices/auth.slice';
 import Header from './components/Layouts/Header/Header';
@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   const isOpenSideBar = useSelector((state) => state.ui.isOpenSideBar);
   const isControlHide = useSelector((state) => state.ui.isControlHide);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const classes = useStyles({ isOpenSideBar, isControlHide });
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
@@ -60,6 +61,15 @@ function App() {
     }
   }, [dispatch]);
 
+  useEffect(() => {
+    if (isAuthenticated && !user.granted?.includes(1)) {
+      toast.error('Only admin account can login');
+      return history.push('/logout');
+    }
+    if (isAuthenticated && user.granted?.includes(1)) {
+      toast.dismiss();
+    }
+  }, [user, history, isAuthenticated]);
   useEffect(() => {
     if (isControlHide && !location.pathname.includes('/login'))
       dispatch(uiActions.controlHandler(false));

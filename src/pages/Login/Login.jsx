@@ -6,13 +6,12 @@ import {
   InputLabel,
   InputAdornment,
   IconButton,
-  Box,
   FormHelperText,
 } from '@material-ui/core';
 
 import useStyles from './Login.styles';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
-import { Link, Redirect, useLocation } from 'react-router-dom';
+import { Redirect, useLocation } from 'react-router-dom';
 import { useInput } from '../../hooks/use-input';
 import { passwordschema, emailSchema } from '../../schemas';
 import ButtonLoading from '../../components/UI/ButtonLoading/ButtonLoading';
