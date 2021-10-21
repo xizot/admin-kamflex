@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import useStyles from './GenreManager.styles';
-import { genreGetAll } from '../../../slices/genre.slice';
+import { genreDelete, genreGetAll } from '../../../slices/genre.slice';
 import {
   Box,
   Button,
   Container,
-  Paper,
-  Select,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ModalConfirm from '../../../components/ModalConfirm/ModalConfirm';
 import { Add, Delete, Edit } from '@material-ui/icons';
+import AddOrUpdateModal from './AddOrUpdateModal';
 function ProducerManager() {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -28,13 +27,13 @@ function ProducerManager() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const totalResults = useSelector((state) => state.genre.totalResults);
   const results = useSelector((state) => state.genre.results);
-  const totalPages = useSelector((state) => state.genre.totalPages);
+  // const totalPages = useSelector((state) => state.genre.totalPages);
   const [modalState, setModalState] = useState({
-    add: false,
-    update: false,
+    addOrUpdate: false,
     delete: false,
+    type: null,
   });
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const getGenreHandler = useCallback(
     async (page, limit) => {
       try {
@@ -62,30 +61,74 @@ function ProducerManager() {
 
   const openDeleteModalHandler = (e, id) => {
     e.stopPropagation();
-    setSelectedId(id);
+    setSelectedItem(id);
     setModalState({
-      add: false,
-      update: false,
+      addOrUpdate: false,
       delete: true,
+      type: null,
+    });
+  };
+
+  const openUpdateModalHandler = (e, item) => {
+    e.stopPropagation();
+    setSelectedItem(item);
+    setModalState({
+      addOrUpdate: true,
+      delete: false,
+      type: 'UPDATE',
+    });
+  };
+  const openAddModalHandler = (e, item) => {
+    e.stopPropagation();
+    setSelectedItem(item);
+    setModalState({
+      addOrUpdate: true,
+      delete: false,
+      type: 'ADD',
     });
   };
 
   const closeModalHandler = () => {
     setModalState({
-      add: false,
-      update: false,
+      addOrUpdate: false,
       delete: false,
+      type: null,
     });
-    setSelectedId(false);
+    setSelectedItem(null);
   };
 
+  const deleteGenreHandler = async () => {
+    try {
+      await dispatch(
+        genreDelete({
+          id: selectedItem._id,
+        })
+      ).unwrap();
+      toast.success('DELETE Successfully');
+      closeModalHandler();
+    } catch (error) {
+      toast.error(error);
+    }
+  };
   useEffect(() => {
     getGenreHandler(page + 1, rowsPerPage);
   }, [getGenreHandler, page, rowsPerPage]);
 
   return (
     <div className={classes.root}>
-      <ModalConfirm isOpen={modalState.delete} onClose={closeModalHandler} />
+      <AddOrUpdateModal
+        title={modalState.type === 'UPDATE' ? 'Update Genre' : 'Add Genre'}
+        buttonLabel={modalState.type === 'UPDATE' ? 'Update' : 'Add'}
+        type={modalState.type}
+        isOpen={modalState.addOrUpdate}
+        selectedItem={selectedItem}
+        onClose={closeModalHandler}
+      />
+      <ModalConfirm
+        isOpen={modalState.delete}
+        onClose={closeModalHandler}
+        onConfirm={deleteGenreHandler}
+      />
       <Container>
         <Box margin="20px 30px">
           <Typography variant="h3" align="center">
@@ -93,7 +136,11 @@ function ProducerManager() {
           </Typography>
         </Box>
         <Box textAlign="right" marginBottom={2}>
-          <Button variant="contained" color="primary" startIcon={<Add />}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Add />}
+            onClick={openAddModalHandler}>
             Add New
           </Button>
         </Box>
@@ -123,11 +170,11 @@ function ProducerManager() {
                       <Box display="flex">
                         <Edit
                           className={classes.actionIcon}
-                          // onClick={() => openUpdateModalHandler(row.prod_id)}
+                          onClick={(e) => openUpdateModalHandler(e, row)}
                         />
                         <Delete
                           className={classes.actionIcon}
-                          onClick={(e) => openDeleteModalHandler(e, row._id)}
+                          onClick={(e) => openDeleteModalHandler(e, row)}
                         />
                       </Box>
                     </TableCell>

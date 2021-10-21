@@ -3,7 +3,7 @@ import Logout from '../pages/Logout/Logout';
 const Home = lazy(() => import('../pages/AUTH/Home/Home'));
 const Login = lazy(() => import('../pages/Login/Login'));
 const UserManager = lazy(() => import('../pages/AUTH/UserManager/UserManager'));
-const MovieManager = lazy(() => import('../pages/AUTH/MovieManager/MovieManager'));
+const MovieManager = lazy(() => import('../pages/AUTH/MediaManager/MediaManager'));
 const GenreManager = lazy(() => import('../pages/AUTH/GenreManager/GenreManager'));
 const ProducerManager = lazy(() => import('../pages/AUTH/ProducerManager/ProducerManager'));
 

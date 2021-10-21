@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import useStyles from './ProducerManager.styles';
+import useStyles from './MediaManger.styles';
+import { genreDelete, genreGetAll } from '../../../slices/genre.slice';
 import {
   Box,
   Button,
@@ -18,38 +19,34 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ModalConfirm from '../../../components/ModalConfirm/ModalConfirm';
 import { Add, Delete, Edit } from '@material-ui/icons';
-import AddOrUpdateModal from './AddOrUpdateModal';
-import { producerDelete, producerGetAll } from '../../../slices/producer.slice';
-
-function ProducerManager() {
+import { mediaGetAll } from '../../../slices/media.slice';
+import moment from 'moment';
+function MediaManager() {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const totalResults = useSelector((state) => state.producer.totalResults);
-  const results = useSelector((state) => state.producer.results);
-  // const totalPages = useSelector((state) => state.producer.totalPages);
+  const totalResults = useSelector((state) => state.media.totalResults);
+  const results = useSelector((state) => state.media.results);
+  // const totalPages = useSelector((state) => state.media.totalPages);
   const [modalState, setModalState] = useState({
     addOrUpdate: false,
     delete: false,
     type: null,
   });
   const [selectedItem, setSelectedItem] = useState(null);
-  const getProducerHandler = useCallback(
+  const getMediaHandler = useCallback(
     async (page, limit) => {
       try {
         await dispatch(
-          producerGetAll({
+          mediaGetAll({
             page,
             limit,
           })
         ).unwrap();
       } catch (error) {
         toast.error(error);
-        console.log(
-          '🚀 ~ file: ProducerManager.jsx ~ line 274 ~ getProducerHandler ~ error',
-          error
-        );
+        console.log('🚀 ~ file: MediaManager.jsx ~ line 274 ~ getMediaHandler ~ error', error);
       }
     },
     [dispatch]
@@ -101,10 +98,10 @@ function ProducerManager() {
     setSelectedItem(null);
   };
 
-  const deleteProducerHandler = async () => {
+  const deleteGenreHandler = async () => {
     try {
       await dispatch(
-        producerDelete({
+        genreDelete({
           id: selectedItem._id,
         })
       ).unwrap();
@@ -115,28 +112,20 @@ function ProducerManager() {
     }
   };
   useEffect(() => {
-    getProducerHandler(page + 1, rowsPerPage);
-  }, [getProducerHandler, page, rowsPerPage]);
+    getMediaHandler(page + 1, rowsPerPage);
+  }, [getMediaHandler, page, rowsPerPage]);
 
   return (
     <div className={classes.root}>
-      <AddOrUpdateModal
-        title={modalState.type === 'UPDATE' ? 'Update Producer' : 'Add Producer'}
-        buttonLabel={modalState.type === 'UPDATE' ? 'Update' : 'Add'}
-        type={modalState.type}
-        isOpen={modalState.addOrUpdate}
-        selectedItem={selectedItem}
-        onClose={closeModalHandler}
-      />
       <ModalConfirm
         isOpen={modalState.delete}
         onClose={closeModalHandler}
-        onConfirm={deleteProducerHandler}
+        onConfirm={deleteGenreHandler}
       />
       <Container>
         <Box margin="20px 30px">
           <Typography variant="h3" align="center">
-            Producer Manager
+            Media Manager
           </Typography>
         </Box>
         <Box textAlign="right" marginBottom={2}>
@@ -154,8 +143,16 @@ function ProducerManager() {
               <TableHead>
                 <TableRow className={classes.tableHead}>
                   <TableCell style={{ fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell> Name </TableCell>
-                  <TableCell> Country </TableCell>
+                  <TableCell> Title </TableCell>
+                  <TableCell> Type </TableCell>
+                  <TableCell> Overview </TableCell>
+                  <TableCell> Genres</TableCell>
+                  <TableCell> Views </TableCell>
+                  <TableCell> Likes </TableCell>
+                  <TableCell> Dislikes </TableCell>
+                  <TableCell> Release Date </TableCell>
+                  <TableCell> Created At </TableCell>
+                  <TableCell> Update At </TableCell>
                   <TableCell> Options </TableCell>
                 </TableRow>
               </TableHead>
@@ -168,8 +165,18 @@ function ProducerManager() {
                     <TableCell component="th" scope="row" style={{ fontWeight: 'bold' }}>
                       {row._id}
                     </TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell style={{ textTransform: 'upperCase' }}>{row.country}</TableCell>
+                    <TableCell>{row.title} </TableCell>
+                    <TableCell> {row.type} </TableCell>
+                    <TableCell>
+                      <Box className={classes.longText}>{row.overview}</Box>{' '}
+                    </TableCell>
+                    <TableCell> {row.genres?.map((item) => item.name)?.join(', ')} </TableCell>
+                    <TableCell> {row.views} </TableCell>
+                    <TableCell> {row.likes} </TableCell>
+                    <TableCell> {row.dislikes} </TableCell>
+                    <TableCell> {moment(row.releaseDate).format('MM/DD/yyyy')} </TableCell>
+                    <TableCell> {moment(row.createdAt).format('MM/DD/yyyy')} </TableCell>
+                    <TableCell> {moment(row.updateAt).format('MM/DD/yyyy')} </TableCell>
                     <TableCell>
                       <Box display="flex">
                         <Edit
@@ -205,4 +212,4 @@ function ProducerManager() {
   );
 }
 
-export default ProducerManager;
+export default MediaManager;

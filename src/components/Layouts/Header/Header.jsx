@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Box, IconButton, MenuItem } from '@material-ui/core';
+import React from 'react';
+import { Box, IconButton } from '@material-ui/core';
 import { AppBar, Button, Toolbar } from '@material-ui/core';
-import { Link, NavLink, useHistory } from 'react-router-dom';
-import { Close, Menu, MenuOpen, ExitToApp, Person } from '@material-ui/icons';
+import { Link, useHistory } from 'react-router-dom';
+import { Menu, MenuOpen, ExitToApp, Person } from '@material-ui/icons';
 import useStyles from './Header.styles';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
@@ -10,36 +10,13 @@ import { authActions } from '../../../slices/auth.slice';
 import { uiActions } from '../../../slices/ui.slice';
 // import InputSearch from '../../InputSearch/InputSearch';
 
-const navLink = [
-  {
-    title: 'Movie Manager',
-    protect: true,
-    subLinks: [
-      { link: '/movie-manager', title: 'Movies' },
-      { link: '/genres-manager', title: 'Genres' },
-      { link: '/producer-manager', title: 'Producers' },
-    ],
-  },
-  {
-    link: '/user-manager',
-    title: 'User Manager',
-    protect: false,
-    subLinks: [],
-  },
-];
-
 function Header() {
-  const [openSPMenu, setOpenSPMenu] = useState(false);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const dispatch = useDispatch();
   const history = useHistory();
   const isOpenSideBar = useSelector((state) => state.ui.isOpenSideBar);
   const isControlHide = useSelector((state) => state.ui.isControlHide);
   const classes = useStyles({ isOpenSideBar, isControlHide });
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
 
   const toggleSideBarHandler = () => {
     dispatch(uiActions.toggleSideBar());

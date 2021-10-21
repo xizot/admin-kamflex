@@ -5,7 +5,6 @@ import { getAll, updateStatus, userActions } from '../../../slices/user.slice';
 import {
   Box,
   Container,
-  Paper,
   Select,
   Table,
   TableBody,
@@ -26,7 +25,7 @@ function UserManager() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const totalResults = useSelector((state) => state.user.totalResults);
   const results = useSelector((state) => state.user.results);
-  const totalPages = useSelector((state) => state.user.totalPages);
+  // const totalPages = useSelector((state) => state.user.totalPages);
   const getUserHandler = useCallback(
     async (page, limit) => {
       try {

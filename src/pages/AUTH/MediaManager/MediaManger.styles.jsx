@@ -13,4 +13,13 @@ export default makeStyles((theme) => ({
       opacity: 0.7,
     },
   },
+  longText: {
+    wordWrap: 'break-word',
+    width: 250,
+    maxWidth: 500,
+    display: '-webkit-box',
+    '-webkit-line-clamp': 4,
+    '-webkit-box-orient': 'vertical',
+    overflow: 'hidden',
+  },
 }));

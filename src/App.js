@@ -2,7 +2,6 @@ import { Suspense, useEffect } from 'react';
 import { Route, Switch, useHistory, useLocation } from 'react-router-dom';
 import SideBar from './components/Layouts/SideBar/SideBar';
 import { Box, createTheme, CssBaseline, makeStyles, ThemeProvider } from '@material-ui/core';
-import Footer from './components/Layouts/Footer/Footer';
 import aos from 'aos';
 import 'aos/dist/aos.css';
 import Loading from './components/Loading/Loading';

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import useStyles from './SideBar.styles';
 import { Box, IconButton, Typography } from '@material-ui/core';
-import { Link, NavLink } from 'react-router-dom';
-import { ArrowRight, Close, Delete, ExitToApp } from '@material-ui/icons';
+import { NavLink } from 'react-router-dom';
+import { ArrowRight, Close } from '@material-ui/icons';
 import { useSelector } from 'react-redux';
 import { uiActions } from '../../../slices/ui.slice';
 import { useDispatch } from 'react-redux';
@@ -39,7 +39,7 @@ function SideBar() {
           <ul className={`${classes.subContent} ${dropMenu ? 'is-show' : 'is-hide'}`}>
             <li className={classes.link}>
               <NavLink activeClassName={classes.linkActive} to="/movie-manager">
-                Movies
+                Media
               </NavLink>
             </li>
             <li className={classes.link}>
