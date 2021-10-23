@@ -21,6 +21,7 @@ import ModalConfirm from '../../../components/ModalConfirm/ModalConfirm';
 import { Add, Delete, Edit } from '@material-ui/icons';
 import { mediaGetAll } from '../../../slices/media.slice';
 import moment from 'moment';
+import AddOrUpdateModal from './AddOrUpdateModal';
 function MediaManager() {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -117,6 +118,14 @@ function MediaManager() {
 
   return (
     <div className={classes.root}>
+      <AddOrUpdateModal
+        title={modalState.type === 'UPDATE' ? 'Update Producer' : 'Add Producer'}
+        buttonLabel={modalState.type === 'UPDATE' ? 'Update' : 'Add'}
+        type={modalState.type}
+        isOpen={modalState.addOrUpdate}
+        selectedItem={selectedItem}
+        onClose={closeModalHandler}
+      />
       <ModalConfirm
         isOpen={modalState.delete}
         onClose={closeModalHandler}
