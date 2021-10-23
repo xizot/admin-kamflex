@@ -160,7 +160,7 @@ function ProducerManager() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {results.map((row, index) => (
+                {results?.map((row, index) => (
                   <TableRow
                     key={index}
                     // onClick={() => openUpdateModalHandler(row.prod_id)}

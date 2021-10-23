@@ -51,8 +51,6 @@ function UserManager() {
     setPage(value);
   };
   const statusChangeHandler = async (e, id) => {
-    console.log(e.target.value);
-
     e.stopPropagation();
     const newStatus = e.target.value === 'false' ? false : true;
     try {

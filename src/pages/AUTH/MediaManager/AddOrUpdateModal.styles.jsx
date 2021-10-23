@@ -4,7 +4,7 @@ export default makeStyles((theme) => ({
   paper: {
     width: '60rem',
     maxWidth: '90%',
-    margin: '20vh auto 0',
+    margin: '20vh auto 5vh',
     backgroundColor: '#fff',
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(4, 3),

@@ -57,7 +57,7 @@ export const mediaGetAll = createAsyncThunk(
 );
 
 export const mediaGetById = createAsyncThunk(
-  'media/mediaGetAll',
+  'media/mediaGetById',
   async ({ id }, { rejectWithValue }) => {
     try {
       return (await axiosInstance.get(`/api/media/${id}`)).data;
@@ -75,7 +75,6 @@ export const mediaUpdate = createAsyncThunk(
   async (
     {
       id,
-      type,
       title,
       originalTitle,
       overview,
@@ -89,7 +88,7 @@ export const mediaUpdate = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      return (
+      const response = (
         await axiosInstance.patch(`/api/media/${id}`, {
           title,
           originalTitle,
@@ -102,6 +101,7 @@ export const mediaUpdate = createAsyncThunk(
           releaseDate,
         })
       ).data;
+      return { _id: id, ...response };
     } catch (error) {
       if (!error.response) {
         throw error;
@@ -115,7 +115,8 @@ export const mediaDeleteById = createAsyncThunk(
   'media/mediaDelete',
   async ({ id }, { rejectWithValue }) => {
     try {
-      return (await axiosInstance.delete(`/api/media/${id}`)).data;
+      await axiosInstance.delete(`/api/media/${id}`).data;
+      return { _id: id };
     } catch (error) {
       if (!error.response) {
         throw error;
@@ -176,8 +177,8 @@ export const mediaUpdatePoster = createAsyncThunk(
   async ({ id, file }, { rejectWithValue }) => {
     try {
       return (
-        await axiosInstance.patch(`/api/media/${id}/poster`, {
-          file,
+        await axiosInstance.patch(`/api/media/${id}/poster`, file, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         })
       ).data;
     } catch (error) {
@@ -208,8 +209,8 @@ export const mediaUpdateBackdrop = createAsyncThunk(
   async ({ id, file }, { rejectWithValue }) => {
     try {
       return (
-        await axiosInstance.patch(`/api/media/${id}/backdrop`, {
-          file,
+        await axiosInstance.patch(`/api/media/${id}/backdrop`, file, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         })
       ).data;
     } catch (error) {
@@ -240,8 +241,8 @@ export const mediaAddSubtitle = createAsyncThunk(
   async ({ id, file }, { rejectWithValue }) => {
     try {
       return (
-        await axiosInstance.post(`/api/media/${id}/subtitles`, {
-          file,
+        await axiosInstance.post(`/api/media/${id}/subtitles`, file, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         })
       ).data;
     } catch (error) {
@@ -300,7 +301,25 @@ export const mediaAddSource = createAsyncThunk(
     }
   }
 );
-
+export const mediaAddSourceWithURL = createAsyncThunk(
+  'media/mediaAddSourceWithURL',
+  async ({ file, url }, { rejectWithValue }) => {
+    try {
+      return (
+        await axiosInstance.post(url, file, {
+          headers: {
+            'Content-Type': 'video/mp4',
+          },
+        })
+      ).data;
+    } catch (error) {
+      if (!error.response) {
+        throw error;
+      }
+      return rejectWithValue(error.response.data.message);
+    }
+  }
+);
 export const mediaAddSourceSession = createAsyncThunk(
   'media/mediaAddSourceSession',
   async ({ id, sessionId, fileId }, { rejectWithValue }) => {
@@ -335,6 +354,20 @@ const mediaSlice = createSlice({
       state.totalResults = totalResults;
       state.page = page;
       state.results = results;
+    },
+    [mediaAdd.fulfilled]: (state, action) => {
+      const data = action.payload;
+      state.results?.push(data);
+    },
+    [mediaUpdate.fulfilled]: (state, action) => {
+      const data = action.payload;
+      state.results = state.results?.map((item) =>
+        item._id === data._id ? { ...item, ...data } : item
+      );
+    },
+    [mediaDeleteById.fulfilled]: (state, action) => {
+      const { _id } = action.payload;
+      state.results = state.results?.filter((item) => item._id !== _id);
     },
   },
 });

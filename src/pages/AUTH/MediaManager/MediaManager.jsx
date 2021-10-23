@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import useStyles from './MediaManger.styles';
-import { genreDelete, genreGetAll } from '../../../slices/genre.slice';
 import {
   Box,
   Button,
@@ -19,7 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ModalConfirm from '../../../components/ModalConfirm/ModalConfirm';
 import { Add, Delete, Edit } from '@material-ui/icons';
-import { mediaGetAll } from '../../../slices/media.slice';
+import { mediaDeleteById, mediaGetAll } from '../../../slices/media.slice';
 import moment from 'moment';
 import AddOrUpdateModal from './AddOrUpdateModal';
 function MediaManager() {
@@ -99,10 +98,10 @@ function MediaManager() {
     setSelectedItem(null);
   };
 
-  const deleteGenreHandler = async () => {
+  const deleteMediaHandler = async () => {
     try {
       await dispatch(
-        genreDelete({
+        mediaDeleteById({
           id: selectedItem._id,
         })
       ).unwrap();
@@ -119,7 +118,7 @@ function MediaManager() {
   return (
     <div className={classes.root}>
       <AddOrUpdateModal
-        title={modalState.type === 'UPDATE' ? 'Update Producer' : 'Add Producer'}
+        modalTitle={modalState.type === 'UPDATE' ? 'Update Media' : 'Add Media'}
         buttonLabel={modalState.type === 'UPDATE' ? 'Update' : 'Add'}
         type={modalState.type}
         isOpen={modalState.addOrUpdate}
@@ -129,7 +128,7 @@ function MediaManager() {
       <ModalConfirm
         isOpen={modalState.delete}
         onClose={closeModalHandler}
-        onConfirm={deleteGenreHandler}
+        onConfirm={deleteMediaHandler}
       />
       <Container>
         <Box margin="20px 30px">
@@ -166,7 +165,7 @@ function MediaManager() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {results.map((row, index) => (
+                {results?.map((row, index) => (
                   <TableRow
                     key={index}
                     // onClick={() => openUpdateModalHandler(row.prod_id)}
