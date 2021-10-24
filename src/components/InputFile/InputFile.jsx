@@ -11,11 +11,13 @@ function InputFile({ onFileSelect, title, maxSize = LIMIT_SIZE, accept, id, disa
   const [selectedName, setSelectedName] = useState(null);
   const fileInputHandler = (e) => {
     const file = e.target.files[0];
-    if (file.size < maxSize) {
-      onFileSelect(e.target.files[0]);
-      setSelectedName(e.target.files[0]?.name);
-    } else {
-      toast.error(`Maximum size: ${maxSize / 1024} MB`);
+    if (file) {
+      if (file.size < maxSize) {
+        onFileSelect(e.target.files[0]);
+        setSelectedName(e.target.files[0]?.name);
+      } else {
+        toast.error(`Maximum size: ${maxSize / 1024} MB`);
+      }
     }
   };
   const removeFileHandler = (e) => {

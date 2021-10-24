@@ -11,6 +11,7 @@ import {
   MenuItem,
   Grid,
   FormHelperText,
+  Button,
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -40,7 +41,7 @@ import {
 } from '../../../slices/media.slice';
 import moment from 'moment';
 import { genreGetAll } from '../../../slices/genre.slice';
-
+import { getFileBase } from '../../../utils/getFileBase';
 const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, buttonLabel }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -53,6 +54,7 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
   const listProducer = useSelector((state) => state.producer.results);
   const [selectedType, setSelectedType] = useState('movie');
   const [addedId, setAddedId] = useState(null);
+  const [isUpdateImage, setIsUpdateImage] = useState(false);
   const [addSourceLoading, setAddSourceLoading] = useState(false);
   const [sourceAdded, setSourceAdded] = useState({
     trailer: false,
@@ -74,6 +76,9 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
   const [selectedBackdrop, setSelectedBackdrop] = useState(null);
   const [selectedSource, setSelectedSource] = useState(null);
   const [selectedSubtitle, setSelectedSubtitle] = useState(null);
+  const [basePoster, setBasePoster] = useState(null);
+  const [baseBackdrop, setBaseBackdrop] = useState(null);
+  const [itemDetails, setItemDetails] = useState(null);
 
   const {
     enteredInput: title,
@@ -189,6 +194,9 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
         setReleaseDate((response?.releaseDate && new Date(response?.releaseDate)) || new Date());
         setSelectedGenres(response?.genres || []);
         setSelectedProducers(response?.producers || []);
+        setBasePoster(response?.posterUrl || null);
+        setBaseBackdrop(response?.backdropUrl || null);
+        setItemDetails(response);
       } catch (error) {
         toast.error(error);
         console.log(
@@ -211,16 +219,21 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
   const posterSelectHandler = async (file) => {
     if (!file) {
       setSelectedPoster(null);
+      setBasePoster(null);
       return;
     }
     setSelectedPoster(file);
+    setBasePoster(await getFileBase(file));
   };
   const backdropSelectHandler = async (file) => {
     if (!file) {
       setSelectedBackdrop(null);
+      setBaseBackdrop(null);
+
       return;
     }
     setSelectedBackdrop(file);
+    setBaseBackdrop(await getFileBase(file));
   };
   const subtitleSelectHandler = async (file) => {
     if (!file) {
@@ -257,15 +270,15 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
         googleDrive: false,
         session: false,
       });
+      setItemDetails(null);
     } else {
       toast.error('Please waiting...');
     }
   };
   const formSubmitHandler = async (event) => {
     event.preventDefault();
-
     if (!formIsValid) return;
-
+    setAddSourceLoading(true);
     if (type === 'UPDATE') {
       try {
         await dispatch(
@@ -282,9 +295,33 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
             releaseDate: moment(releaseDate).format('yyyy-MM-DD'),
           })
         ).unwrap();
+        if (selectedPoster) {
+          const form = new FormData();
+          form.append('file', selectedPoster);
+          await dispatch(
+            mediaUpdatePoster({
+              id: selectedItem._id,
+              file: form,
+            })
+          ).unwrap();
+        }
+
+        if (!sourceAdded.backdrop && selectedBackdrop) {
+          const form = new FormData();
+          form.append('file', selectedBackdrop);
+          await dispatch(
+            mediaUpdateBackdrop({
+              id: selectedItem._id,
+              file: form,
+            })
+          ).unwrap();
+        }
         toast.success('Update Successfully');
+        setAddSourceLoading(false);
         closeHandler();
       } catch (error) {
+        setAddSourceLoading(false);
+
         toast.error(error);
       }
     } else if (type === 'ADD') {
@@ -303,10 +340,14 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
             releaseDate: moment(releaseDate).format('yyyy-MM-DD'),
           })
         ).unwrap();
+
         toast.success('Add Media Successfully');
+        setAddSourceLoading(false);
         setAddedId(response._id);
         // onClose();
       } catch (error) {
+        setAddSourceLoading(false);
+
         toast.error(error);
       }
     }
@@ -444,7 +485,7 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
             <Close />
           </IconButton>
         </Box>
-        {!addedId && (
+        {!addedId && !isUpdateImage && (
           <form noValidate autoComplete="off" onSubmit={formSubmitHandler}>
             <FormControl className={classes.form} fullWidth size="small">
               <TextField
@@ -578,14 +619,139 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
                 size="small"
               />
             </FormControl>
+            {type === 'UPDATE' && (
+              <Box marginBottom={3}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <div className={classes.updateImage}>
+                      <img
+                        src={
+                          basePoster ||
+                          itemDetails?.posterUrl ||
+                          process.env.PUBLIC_URL + '/images/default-movie.gif'
+                        }
+                        alt="poster"
+                      />
+                    </div>
+                    <InputFile
+                      title="Add New Poster"
+                      accept="image/png, image/gif, image/jpeg"
+                      id="poster"
+                      onFileSelect={posterSelectHandler}
+                      maxSize={2097152}
+                      disable={sourceAdded.poster}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <div className={classes.updateImage}>
+                      <img
+                        src={
+                          baseBackdrop ||
+                          itemDetails?.backdropUrl ||
+                          process.env.PUBLIC_URL + '/images/default-movie.gif'
+                        }
+                        alt="backdrop"
+                      />
+                    </div>
 
-            <ButtonLoading size="large" isLoading={false} type="submit" disabled={!formIsValid}>
+                    <InputFile
+                      title="Add New Backdrop"
+                      accept="image/png, image/gif, image/jpeg"
+                      id="backdrop"
+                      onFileSelect={backdropSelectHandler}
+                      maxSize={4194304}
+                      disable={sourceAdded.backdrop}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+
+            <ButtonLoading
+              size="large"
+              isLoading={addSourceLoading}
+              type="submit"
+              disabled={!formIsValid}>
               {buttonLabel}
             </ButtonLoading>
           </form>
         )}
 
         {type === 'ADD' && addedId && (
+          <form encType="multipart/form-data">
+            <Box>
+              <FormControl className={classes.form} fullWidth size="small">
+                <TextField
+                  label="Trailer"
+                  variant="outlined"
+                  value={trailer}
+                  error={trailerHasError}
+                  helperText={trailerHasError && trailerErrorMessage}
+                  onBlur={trailerBlurHandler}
+                  onChange={trailerChangeHandler}
+                  placeholder="Youtube URI"
+                  size="small"
+                  InputProps={{
+                    readOnly: sourceAdded.trailer,
+                  }}
+                  disabled={sourceAdded.trailer}
+                />
+              </FormControl>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="Add Poster"
+                    accept="image/png, image/gif, image/jpeg"
+                    id="poster"
+                    onFileSelect={posterSelectHandler}
+                    maxSize={2097152}
+                    disable={sourceAdded.poster}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="Add Backdrop"
+                    accept="image/png, image/gif, image/jpeg"
+                    id="backdrop"
+                    onFileSelect={backdropSelectHandler}
+                    maxSize={4194304}
+                    disable={sourceAdded.backdrop}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="Add Subtitle (.VTT)"
+                    accept=".vtt"
+                    id="subtitle"
+                    onFileSelect={subtitleSelectHandler}
+                    maxSize={512000}
+                    disable={sourceAdded.subtitle}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="* Add Source (.MP4)"
+                    accept="video/mp4"
+                    id="source"
+                    onFileSelect={sourceSelectHandler}
+                  />
+                </Grid>
+              </Grid>
+              <Box marginTop={3}>
+                <ButtonLoading
+                  size="large"
+                  isLoading={addSourceLoading}
+                  type="button"
+                  onClick={addSourceHandler}
+                  disabled={!addSourceIsValid}>
+                  {buttonLabel}
+                </ButtonLoading>
+              </Box>
+            </Box>
+          </form>
+        )}
+
+        {type === 'UPDATE' && isUpdateImage && (
           <form encType="multipart/form-data">
             <Box>
               <FormControl className={classes.form} fullWidth size="small">

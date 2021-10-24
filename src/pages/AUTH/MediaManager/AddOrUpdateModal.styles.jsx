@@ -50,4 +50,18 @@ export default makeStyles((theme) => ({
     top: theme.spacing(1),
     zIndex: 99,
   },
+  updateImage: {
+    paddingTop: '56.25%',
+    position: 'relative',
+    width: '100%',
+    '& img': {
+      width: '100%',
+      height: '100%',
+      objectFix: 'cover',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      zIndex: 1,
+    },
+  },
 }));
