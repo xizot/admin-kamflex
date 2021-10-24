@@ -3,7 +3,7 @@ import { Add } from '@material-ui/icons';
 import React, { useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import useStyles from './InputFile.styles';
-const LIMIT_SIZE = 1024 * 10000;
+const LIMIT_SIZE = 1024 * 1000000;
 
 function InputFile({ onFileSelect, title, maxSize = LIMIT_SIZE, accept, id, disable = false }) {
   const classes = useStyles();

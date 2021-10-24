@@ -367,6 +367,7 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
           mediaAddSubtitle({
             id: addedId,
             file: form,
+            language: 'en',
           })
         ).unwrap();
         setSourceAdded((prev) => ({ ...prev, subtitle: true }));
