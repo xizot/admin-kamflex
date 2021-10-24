@@ -31,5 +31,20 @@ export default makeStyles((theme) => ({
     '-webkit-box-orient': 'vertical',
     overflow: 'hidden',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    maxWidth: 'calc(100% - 20px)',
+    textOverflow: 'ellipsis',
+  },
+  disable: {
+    opacity: 0.8,
+    background: '#ddd',
+    '& $inputFileLabel': {
+      pointerEvents: 'none',
+      cursor: 'not-allowed',
+    },
+    '& $inputFileIcon': {
+      pointerEvents: 'none',
+      cursor: 'not-allowed',
+    },
   },
 }));

@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import useStyles from './InputFile.styles';
 const LIMIT_SIZE = 1024 * 10000;
 
-function InputFile({ onFileSelect, title, maxSize = LIMIT_SIZE, accept, id }) {
+function InputFile({ onFileSelect, title, maxSize = LIMIT_SIZE, accept, id, disable = false }) {
   const classes = useStyles();
   const inputRef = useRef();
   const [selectedName, setSelectedName] = useState(null);
@@ -33,10 +33,11 @@ function InputFile({ onFileSelect, title, maxSize = LIMIT_SIZE, accept, id }) {
         id={id}
         accept={accept}
         ref={inputRef}
+        disable={disable.toString()}
         onChange={fileInputHandler}
         onClick={(e) => e.target.value === null}
       />
-      <Box className={classes.inputFile}>
+      <Box className={`${classes.inputFile} ${disable ? classes.disable : ''}`}>
         <IconButton className={classes.inputFileIcon}>
           <label htmlFor={id} className={classes.inputFileLabel} />
           <Add />
@@ -49,7 +50,7 @@ function InputFile({ onFileSelect, title, maxSize = LIMIT_SIZE, accept, id }) {
             variant="body1"
             className={classes.inputSelectedName}
             onClick={removeFileHandler}>
-            ✕ {selectedName}
+            {`✕ ${selectedName}`}
           </Typography>
         )}
       </Box>

@@ -24,6 +24,7 @@ import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/picker
 import MomentUtils from '@date-io/moment';
 import { Autocomplete } from '@material-ui/lab';
 import { mediaSchema } from '../../../schemas/media.schema';
+import FormData from 'form-data';
 
 import {
   mediaAdd,
@@ -39,7 +40,6 @@ import {
 } from '../../../slices/media.slice';
 import moment from 'moment';
 import { genreGetAll } from '../../../slices/genre.slice';
-import { getFileBase } from '../../../utils/getFileBase';
 
 const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, buttonLabel }) => {
   const dispatch = useDispatch();
@@ -166,7 +166,7 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
       } catch (error) {
         toast.error(error);
         console.log(
-          '🚀 ~ file: ProducerManager.jsx ~ line 274 ~ getProducerHandler ~ error',
+          '🚀 ~ file: getProducerHandler.jsx ~ line 274 ~ getProducerHandler ~ error',
           error
         );
       }
@@ -209,29 +209,25 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
     }
   };
   const posterSelectHandler = async (file) => {
-    console.log(file);
     if (!file) {
       setSelectedPoster(null);
       return;
     }
-    const img = await getFileBase(file);
-    setSelectedPoster(img);
+    setSelectedPoster(file);
   };
   const backdropSelectHandler = async (file) => {
     if (!file) {
       setSelectedBackdrop(null);
       return;
     }
-    const img = await getFileBase(file);
-    setSelectedBackdrop(img);
+    setSelectedBackdrop(file);
   };
   const subtitleSelectHandler = async (file) => {
     if (!file) {
       setSelectedSubtitle(null);
       return;
     }
-    const img = await getFileBase(file);
-    setSelectedSubtitle(img);
+    setSelectedSubtitle(file);
   };
   const closeHandler = () => {
     if (!addSourceLoading) {
@@ -341,44 +337,48 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
       }
 
       if (!sourceAdded.poster && selectedPoster) {
+        const form = new FormData();
+        form.append('file', selectedPoster);
         await dispatch(
           mediaUpdatePoster({
             id: addedId,
-            file: selectedPoster,
+            file: form,
           })
         ).unwrap();
         setSourceAdded((prev) => ({ ...prev, poster: true }));
       }
 
       if (!sourceAdded.backdrop && selectedBackdrop) {
+        const form = new FormData();
+        form.append('file', selectedBackdrop);
         await dispatch(
           mediaUpdateBackdrop({
             id: addedId,
-            file: selectedBackdrop,
+            file: form,
           })
         ).unwrap();
         setSourceAdded((prev) => ({ ...prev, backdrop: true }));
       }
 
       if (!sourceAdded.subtitle && selectedSubtitle) {
+        const form = new FormData();
+        form.append('file', selectedSubtitle);
         await dispatch(
           mediaAddSubtitle({
             id: addedId,
-            file: selectedSubtitle,
+            file: form,
           })
         ).unwrap();
         setSourceAdded((prev) => ({ ...prev, subtitle: true }));
       }
 
       if (selectedSource) {
-        const sourceBase = await getFileBase(selectedSource);
-
         const { _id: sessionId, url } = await dispatch(
           mediaAddSource({
             id: addedId,
             filename: selectedSource.name,
             mimeType: selectedSource.type,
-            size: sourceAdded.source ? 2 : 1,
+            size: selectedSource.size,
           })
         ).unwrap();
 
@@ -386,18 +386,20 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
 
         const res = await dispatch(
           mediaAddSourceWithURL({
-            file: sourceBase,
+            file: selectedSource,
             url,
           })
         ).unwrap();
 
-        await dispatch(
-          mediaAddSourceSession({
-            id: addedId,
-            sessionId: sessionId,
-            fileId: res.id,
-          })
-        ).unwrap();
+        if (res) {
+          await dispatch(
+            mediaAddSourceSession({
+              id: addedId,
+              sessionId: sessionId,
+              fileId: res.id,
+            })
+          ).unwrap();
+        }
       }
 
       setAddSourceLoading(false);
@@ -582,72 +584,77 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
         )}
 
         {type === 'ADD' && addedId && (
-          <Box>
-            <FormControl className={classes.form} fullWidth size="small">
-              <TextField
-                label="Trailer"
-                variant="outlined"
-                value={trailer}
-                error={trailerHasError}
-                helperText={trailerHasError && trailerErrorMessage}
-                onBlur={trailerBlurHandler}
-                onChange={trailerChangeHandler}
-                placeholder="Youtube URI"
-                size="small"
-                InputProps={{
-                  readOnly: sourceAdded.trailer,
-                }}
-                disabled={sourceAdded.trailer}
-              />
-            </FormControl>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
-                <InputFile
-                  title="Add Poster"
-                  accept="image/png, image/gif, image/jpeg"
-                  id="poster"
-                  onFileSelect={posterSelectHandler}
-                  maxSize={2097152}
+          <form encType="multipart/form-data">
+            <Box>
+              <FormControl className={classes.form} fullWidth size="small">
+                <TextField
+                  label="Trailer"
+                  variant="outlined"
+                  value={trailer}
+                  error={trailerHasError}
+                  helperText={trailerHasError && trailerErrorMessage}
+                  onBlur={trailerBlurHandler}
+                  onChange={trailerChangeHandler}
+                  placeholder="Youtube URI"
+                  size="small"
+                  InputProps={{
+                    readOnly: sourceAdded.trailer,
+                  }}
+                  disabled={sourceAdded.trailer}
                 />
+              </FormControl>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="Add Poster"
+                    accept="image/png, image/gif, image/jpeg"
+                    id="poster"
+                    onFileSelect={posterSelectHandler}
+                    maxSize={2097152}
+                    disable={sourceAdded.poster}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="Add Backdrop"
+                    accept="image/png, image/gif, image/jpeg"
+                    id="backdrop"
+                    onFileSelect={backdropSelectHandler}
+                    maxSize={4194304}
+                    disable={sourceAdded.backdrop}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="Add Subtitle (.VTT)"
+                    accept=".vtt"
+                    id="subtitle"
+                    onFileSelect={subtitleSelectHandler}
+                    maxSize={512000}
+                    disable={sourceAdded.subtitle}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <InputFile
+                    title="Add Source (.MP4)"
+                    accept="video/mp4"
+                    id="source"
+                    onFileSelect={sourceSelectHandler}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12} md={4}>
-                <InputFile
-                  title="Add Backdrop"
-                  accept="image/png, image/gif, image/jpeg"
-                  id="backdrop"
-                  onFileSelect={backdropSelectHandler}
-                  maxSize={4194304}
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <InputFile
-                  title="Add Subtitle (.VTT)"
-                  accept=".vtt"
-                  id="subtitle"
-                  onFileSelect={subtitleSelectHandler}
-                  maxSize={512000}
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <InputFile
-                  title="Add Source (.MP4)"
-                  accept="video/mp4"
-                  id="source"
-                  onFileSelect={sourceSelectHandler}
-                />
-              </Grid>
-            </Grid>
-            <Box marginTop={3}>
-              <ButtonLoading
-                size="large"
-                isLoading={addSourceLoading}
-                type="button"
-                onClick={addSourceHandler}
-                disabled={!addSourceIsValid}>
-                {buttonLabel}
-              </ButtonLoading>
+              <Box marginTop={3}>
+                <ButtonLoading
+                  size="large"
+                  isLoading={addSourceLoading}
+                  type="button"
+                  onClick={addSourceHandler}
+                  disabled={!addSourceIsValid}>
+                  {buttonLabel}
+                </ButtonLoading>
+              </Box>
             </Box>
-          </Box>
+          </form>
         )}
       </div>
     </Modal>

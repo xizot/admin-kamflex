@@ -304,6 +304,7 @@ export const mediaAddSource = createAsyncThunk(
 export const mediaAddSourceWithURL = createAsyncThunk(
   'media/mediaAddSourceWithURL',
   async ({ file, url }, { rejectWithValue }) => {
+    console.log(file, url);
     try {
       return (
         await axiosInstance.post(url, file, {
