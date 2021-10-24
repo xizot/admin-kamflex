@@ -312,11 +312,12 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
     }
   };
   const addSourceIsValid =
-    selectedBackdrop !== null ||
-    selectedPoster !== null ||
-    selectedSubtitle !== null ||
-    selectedSource !== null ||
-    trailerIsvalid;
+    (selectedBackdrop !== null ||
+      selectedPoster !== null ||
+      selectedSubtitle !== null ||
+      trailerIsvalid ||
+      selectedSource !== null) &&
+    selectedSource !== null;
 
   const addSourceHandler = async () => {
     try {
@@ -363,11 +364,11 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
       if (!sourceAdded.subtitle && selectedSubtitle) {
         const form = new FormData();
         form.append('file', selectedSubtitle);
+        form.append('language', 'en');
         await dispatch(
           mediaAddSubtitle({
             id: addedId,
             file: form,
-            language: 'en',
           })
         ).unwrap();
         setSourceAdded((prev) => ({ ...prev, subtitle: true }));
@@ -637,7 +638,7 @@ const AddOrUpdateModal = ({ selectedItem, modalTitle, type, isOpen, onClose, but
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <InputFile
-                    title="Add Source (.MP4)"
+                    title="* Add Source (.MP4)"
                     accept="video/mp4"
                     id="source"
                     onFileSelect={sourceSelectHandler}

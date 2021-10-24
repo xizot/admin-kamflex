@@ -238,19 +238,12 @@ export const mediaDeleteBackdrop = createAsyncThunk(
 
 export const mediaAddSubtitle = createAsyncThunk(
   'media/mediaAddSubtitle',
-  async ({ id, file, language }, { rejectWithValue }) => {
+  async ({ id, file }, { rejectWithValue }) => {
     try {
       return (
-        await axiosInstance.post(
-          `/api/media/${id}/subtitles`,
-          {
-            file,
-            language,
-          },
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          }
-        )
+        await axiosInstance.post(`/api/media/${id}/subtitles`, file, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
       ).data;
     } catch (error) {
       if (!error.response) {
