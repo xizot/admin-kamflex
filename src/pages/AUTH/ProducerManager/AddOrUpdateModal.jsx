@@ -104,7 +104,7 @@ const AddOrUpdateModal = ({
         <form noValidate autoComplete="off" onSubmit={formSubmitHandler}>
           <FormControl className={classes.form} fullWidth size="small">
             <TextField
-              label="Genre name"
+              label="Producer name"
               variant="outlined"
               value={producerName}
               error={producerNameHasError}
