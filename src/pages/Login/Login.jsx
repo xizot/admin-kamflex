@@ -18,6 +18,7 @@ import ButtonLoading from '../../components/UI/ButtonLoading/ButtonLoading';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../slices/auth.slice';
 import { uiActions } from '../../slices/ui.slice';
+import { toast } from 'react-toastify';
 
 function Login() {
   const classes = useStyles();
@@ -75,6 +76,7 @@ function Login() {
       //vghuy17ck1@gmail.com
       //Abcxyz123
     } catch (error) {
+      toast.error(error);
       setError(error);
     }
   };

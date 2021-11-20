@@ -76,8 +76,7 @@ const producerSlice = createSlice({
       state.results = results;
     },
     [producerAdd.fulfilled]: (state, action) => {
-      const { _id, name } = action.payload;
-      state.results?.push({ _id, name });
+      state.results = [...state.results, action.payload];
     },
     [producerUpdate.fulfilled]: (state, action) => {
       const { _id, name, country } = action.payload;
