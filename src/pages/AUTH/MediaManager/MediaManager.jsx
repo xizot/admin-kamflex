@@ -173,7 +173,9 @@ function MediaManager() {
                     <TableCell component="th" scope="row" style={{ fontWeight: 'bold' }}>
                       {row._id}
                     </TableCell>
-                    <TableCell>{row.title} </TableCell>
+                    <TableCell>
+                      <Box className={classes.longTextTitle}>{row.title}</Box>{' '}
+                    </TableCell>
                     <TableCell> {row.type} </TableCell>
                     <TableCell>
                       <Box className={classes.longText}>{row.overview}</Box>{' '}
